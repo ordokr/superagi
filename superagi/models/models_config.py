@@ -70,7 +70,7 @@ class ModelsConfig(DBBaseModel):
         if not config:
             return None
 
-        if config.provider == 'Local LLM':
+        if config.provider in ['Local LLM', 'LM Studio']:
             return {"provider": config.provider, "api_key": config.api_key} if config else None
 
         return {"provider": config.provider, "api_key": decrypt_data(config.api_key)} if config else None
@@ -85,6 +85,8 @@ class ModelsConfig(DBBaseModel):
             session.flush()
             if model_provider == 'OpenAI':
                 cls.storeGptModels(session, organisation_id, existing_entry.id, model_api_key)
+            elif model_provider == 'LM Studio':
+                cls.storeLMStudioModels(session, organisation_id, existing_entry.id, model_api_key)
             result = {'message': 'The API key was successfully updated'}
         else:
             new_entry = ModelsConfig(org_id=organisation_id, provider=model_provider,
@@ -94,6 +96,8 @@ class ModelsConfig(DBBaseModel):
             session.flush()
             if model_provider == 'OpenAI':
                 cls.storeGptModels(session, organisation_id, new_entry.id, model_api_key)
+            elif model_provider == 'LM Studio':
+                cls.storeLMStudioModels(session, organisation_id, new_entry.id, model_api_key)
             result = {'message': 'The API key was successfully stored', 'model_provider_id': new_entry.id}
 
         return result
@@ -107,6 +111,41 @@ class ModelsConfig(DBBaseModel):
             if model not in installed_models and model in default_models:
                 result = Models.store_model_details(session, organisation_id, model, model, '',
                                                  model_provider_id, default_models[model], 'Custom', '', 0)
+
+    @classmethod
+    def storeLMStudioModels(cls, session, organisation_id, model_provider_id, model_api_key):
+        """Store LM Studio models by fetching them from the LM Studio endpoint."""
+        # Use default endpoint for backward compatibility
+        cls.storeLMStudioModelsWithEndpoint(session, organisation_id, model_provider_id, model_api_key, "http://192.168.0.144:1234")
+
+    @classmethod
+    def storeLMStudioModelsWithEndpoint(cls, session, organisation_id, model_provider_id, model_api_key, endpoint):
+        """Store LM Studio models by fetching them from the specified LM Studio endpoint."""
+        try:
+            from superagi.llms.lm_studio import LMStudio
+
+            # Create LM Studio instance with the provided endpoint
+            lm_studio = LMStudio(api_key=model_api_key, end_point=endpoint)
+            available_models = lm_studio.get_models()
+
+            installed_models = [model[0] for model in session.query(Models.model_name).filter(Models.org_id == organisation_id).all()]
+
+            for model in available_models:
+                if model not in installed_models:
+                    # Default context length for LM Studio models
+                    context_length = 4096
+                    # Store the endpoint in the model's end_point field
+                    result = Models.store_model_details(session, organisation_id, model, f"LM Studio - {model}", endpoint,
+                                                     model_provider_id, context_length, 'Custom', '', context_length)
+
+        except Exception as e:
+            logger.error(f"Error storing LM Studio models: {str(e)}")
+            # Store a default model if fetching fails
+            default_model = "local-model"
+            installed_models = [model[0] for model in session.query(Models.model_name).filter(Models.org_id == organisation_id).all()]
+            if default_model not in installed_models:
+                Models.store_model_details(session, organisation_id, default_model, "LM Studio Local Model", endpoint,
+                                         model_provider_id, 4096, 'Custom', '', 4096)
 
     @classmethod
     def fetch_api_keys(cls, session, organisation_id):
@@ -154,7 +193,7 @@ class ModelsConfig(DBBaseModel):
             return {"error": "Model not found"}
         else:
             return {"provider": model.provider}
-    
+
     @classmethod
     def add_llm_config(cls, session, organisation_id):
         existing_models_config = session.query(ModelsConfig).filter(ModelsConfig.org_id == organisation_id, ModelsConfig.provider == 'Local LLM').first()

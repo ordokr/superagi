@@ -139,10 +139,7 @@ weaviate-client==3.20.1
 websockets==10.4
 yarl==1.9.2
 zipp==3.15.0
-tiktoken==0.4.0
-psycopg2==2.9.6
 slack-sdk==3.21.3
-pytest==7.3.2
 pylint==2.17.4
 pre-commit==3.3.3
 pytest-cov==4.1.0
@@ -150,10 +147,9 @@ pytest-mock==3.11.1
 transformers==4.30.2
 pypdf==3.11.0
 python-pptx==0.6.21
-Pillow==9.5.0
 EbookLib==0.18
 html2text==2020.1.16
-duckduckgo-search==3.8.3 
+duckduckgo-search==3.8.3
 google-generativeai==0.1.0
 unstructured==0.8.1
 ai21==1.2.6

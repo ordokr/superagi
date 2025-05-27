@@ -16,6 +16,8 @@ RUN apt-get update && apt-get upgrade -y \
 # Create a virtual environment and activate it
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install Python dependencies from requirements.txt
 COPY requirements.txt .

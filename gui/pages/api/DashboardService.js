@@ -344,6 +344,10 @@ export const storeApiKey = (model_provider, model_api_key) => {
   return api.post(`/models_controller/store_api_keys`, {model_provider, model_api_key});
 }
 
+export const storeLMStudio = (api_key, endpoint) => {
+  return api.post(`/models_controller/store_lm_studio`, {api_key, endpoint});
+}
+
 export const fetchApiKeys = () => {
   return api.get(`/models_controller/get_api_keys`);
 }

@@ -11,6 +11,9 @@ services:
       - super__tgwui
       - super__redis
       - super__postgres
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     networks:
       - super_network
 
@@ -24,15 +27,21 @@ services:
       - super__tgwui
       - super__redis
       - super__postgres
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     networks:
       - super_network
-    
+
   gui:
     build: ./gui
     ports:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_BASE_URL=http://localhost:8001
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     networks:
       - super_network
     volumes:
@@ -42,11 +51,23 @@ services:
 
   super__tgwui:
     build:
-      context: .
-      dockerfile: ./tgwui/DockerfileTGWUI
+      context: ./tgwui/
+      dockerfile: DockerfileTGWUI
     container_name: super__tgwui
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     environment:
-      - EXTRA_LAUNCH_ARGS="--listen --verbose --extensions openai --threads 4 --n_ctx 1600"
+      - EXTRA_LAUNCH_ARGS=--listen --verbose --extensions openai --threads 4 --n_ctx 1600 --gpu-memory 20000
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     ports:
       - 7860:7860  # Default web port
       - 5000:5000  # Default API port

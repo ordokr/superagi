@@ -20,6 +20,10 @@ class ValidateAPIKeyRequest(BaseModel):
     model_provider: str
     model_api_key: str
 
+class StoreLMStudioRequest(BaseModel):
+    api_key: str
+    endpoint: str
+
 
 class StoreModelRequest(BaseModel):
     model_name: str
@@ -40,6 +44,29 @@ async def store_api_keys(request: ValidateAPIKeyRequest, organisation=Depends(ge
         return ModelsConfig.store_api_key(db.session, organisation.id, request.model_provider, request.model_api_key)
     except Exception as e:
         logging.error(f"Error while storing API key: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.post("/store_lm_studio", status_code=200)
+async def store_lm_studio(request: StoreLMStudioRequest, organisation=Depends(get_user_organisation)):
+    try:
+        # Store the API key for LM Studio
+        result = ModelsConfig.store_api_key(db.session, organisation.id, "LM Studio", request.api_key)
+
+        # Get the model provider ID
+        model_provider = db.session.query(ModelsConfig).filter(
+            ModelsConfig.org_id == organisation.id,
+            ModelsConfig.provider == "LM Studio"
+        ).first()
+
+        if model_provider:
+            # Store LM Studio models with the provided endpoint
+            ModelsConfig.storeLMStudioModelsWithEndpoint(
+                db.session, organisation.id, model_provider.id, request.api_key, request.endpoint
+            )
+
+        return {"success": True, "message": "LM Studio configured successfully"}
+    except Exception as e:
+        logging.error(f"Error while storing LM Studio configuration: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
@@ -198,7 +225,7 @@ def test_local_llm():
         content = response["choices"][0]["message"]["content"]
         logger.info(content)
         return "Model loaded successfully."
-        
+
     except Exception as e:
         logger.info("Error: ",e)
         raise HTTPException(status_code=404, detail="Error while loading the model. Please check your model path and try again.")

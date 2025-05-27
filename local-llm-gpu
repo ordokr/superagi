@@ -26,7 +26,7 @@ services:
       - super__postgres
     networks:
       - super_network
-    
+
   gui:
     build: ./gui
     ports:
@@ -43,14 +43,10 @@ services:
   super__tgwui:
     build:
       context: ./tgwui/
-      target: llama-cublas
       dockerfile: DockerfileTGWUI
-#      args:
-#        - LCL_SRC_DIR=text-generation-webui  # Developers - see Dockerfile app_base
-    image: atinoda/text-generation-webui:llama-cublas # Specify variant as the :tag
     container_name: super__tgwui
     environment:
-      - EXTRA_LAUNCH_ARGS="--no-mmap --verbose --extensions openai --auto-devices --n_ctx 2000 --gpu-memory 22 22 --n-gpu-layers 128 --threads 8"
+      - EXTRA_LAUNCH_ARGS=--listen --verbose --extensions openai --auto-devices --n_ctx 2000 --gpu-memory 22 22 --n-gpu-layers 128 --threads 8
 #      - BUILD_EXTENSIONS_LIVE="silero_tts whisper_stt" # Install named extensions during every container launch. THIS WILL SIGNIFICANLTLY SLOW LAUNCH TIME.
     ports:
       - 7860:7860  # Default web port

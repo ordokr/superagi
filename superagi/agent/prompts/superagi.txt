@@ -20,54 +20,20 @@ PERFORMANCE EVALUATION:
 4. Reflect on past decisions and strategies to refine your approach.
 5. Every tool has a cost, so be smart and efficient.
 
-Respond with only valid JSON conforming to the following schema:
+Respond with only valid JSON in this exact format:
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-        "thoughts": {
-            "type": "object",
-            "properties": {
-                "text": {
-                    "type": "string",
-                    "description": "thought"
-                },
-                "reasoning": {
-                    "type": "string",
-                    "description": "short reasoning"
-                },
-                "plan": {
-                    "type": "string",
-                    "description": "- short bulleted\n- list that conveys\n- long-term plan"
-                },
-                "criticism": {
-                    "type": "string",
-                    "description": "constructive self-criticism"
-                },
-                "speak": {
-                    "type": "string",
-                    "description": "thoughts summary to say to user"
-                }
-            },
-            "required": ["text", "reasoning", "plan", "criticism", "speak"],
-            "additionalProperties": false
-        },
-        "tool": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "description": "tool name"
-                },
-                "args": {
-                    "type": "object",
-                    "description": "tool arguments"
-                }
-            },
-            "required": ["name", "args"],
-            "additionalProperties": false
-        }
+    "thoughts": {
+        "text": "your thought about the task",
+        "reasoning": "short reasoning for your decision",
+        "plan": "- step 1\n- step 2\n- step 3",
+        "criticism": "constructive self-criticism",
+        "speak": "summary to tell the user"
     },
-    "required": ["thoughts", "tool"],
-    "additionalProperties": false
+    "tool": {
+        "name": "tool_name_here",
+        "args": {
+            "arg1": "value1",
+            "arg2": "value2"
+        }
+    }
 }

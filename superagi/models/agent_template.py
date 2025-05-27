@@ -114,14 +114,21 @@ class AgentTemplate(DBBaseModel):
         Returns:
             list: List of agent templates fetched from the marketplace.
         """
-
-        headers = {'Content-Type': 'application/json'}
-        response = requests.get(
-            marketplace_url + "agent_templates/marketplace/list?search=" + search_str + "&page=" + str(page),
-            headers=headers, timeout=10)
-        if response.status_code == 200:
-            return response.json()
-        else:
+        try:
+            headers = {'Content-Type': 'application/json'}
+            response = requests.get(
+                marketplace_url + "agent_templates/marketplace/list?search=" + search_str + "&page=" + str(page),
+                headers=headers, timeout=10)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logger.warning(f"Marketplace returned status {response.status_code}: {response.text}")
+                return []
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to connect to marketplace: {str(e)}")
+            return []
+        except Exception as e:
+            logger.error(f"Unexpected error fetching marketplace templates: {str(e)}")
             return []
 
     @classmethod

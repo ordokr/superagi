@@ -6,7 +6,7 @@ import {BeatLoader, ClipLoader} from "react-spinners";
 import {ToastContainer, toast} from 'react-toastify';
 
 export default function ModelForm({internalId, getModels, sendModelData, env}){
-    const models = env === 'DEV' ? ['OpenAI', 'Replicate', 'Hugging Face', 'Google Palm', 'Local LLM'] : ['OpenAI', 'Replicate', 'Hugging Face', 'Google Palm'];
+    const models = env === 'DEV' ? ['OpenAI', 'Replicate', 'Hugging Face', 'Google Palm', 'Local LLM', 'LM Studio'] : ['OpenAI', 'Replicate', 'Hugging Face', 'Google Palm', 'LM Studio'];
     const [selectedModel, setSelectedModel] = useState('Select a Model');
     const [modelName, setModelName] = useState('');
     const [modelDescription, setModelDescription] = useState('');
@@ -201,7 +201,7 @@ export default function ModelForm({internalId, getModels, sendModelData, env}){
             </div>}
 
             <div className="horizontal_container justify_space_between w_100 mt_24">
-                {selectedModel==='Local LLM' && <button className="secondary_button flex_none" disabled={!createClickable} 
+                {selectedModel==='Local LLM' && <button className="secondary_button flex_none" disabled={!createClickable}
                 onClick={() => {handleModelStatus();}}>{createClickable ? 'Test Model' : 'Testing model...'}</button>}
                 <div className="horizontal_container justify_end">
                     <button className="secondary_button mr_7"

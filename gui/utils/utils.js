@@ -481,6 +481,7 @@ export const modelIcon = (model) => {
     'Google Palm': '/images/google_palm_logo.svg',
     'Replicate': '/images/replicate_logo.svg',
     'OpenAI': '/images/openai_logo.svg',
+    'LM Studio': '/images/lm_studio_logo.svg',
   }
 
   return icons[model];

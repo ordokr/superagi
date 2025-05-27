@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /opt/venv/bin/activate
+
 # Downloads the tools from marketplace and external tool repositories
 python superagi/tool_manager.py
 

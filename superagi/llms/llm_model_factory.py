@@ -3,6 +3,7 @@ from superagi.llms.local_llm import LocalLLM
 from superagi.llms.openai import OpenAi
 from superagi.llms.replicate import Replicate
 from superagi.llms.hugging_face import HuggingFace
+from superagi.llms.lm_studio import LMStudio
 from superagi.models.models_config import ModelsConfig
 from superagi.models.models import Models
 from sqlalchemy.orm import sessionmaker
@@ -37,6 +38,9 @@ def get_model(organisation_id, api_key, model="gpt-3.5-turbo", **kwargs):
     elif provider_name == 'Local LLM':
         print("Provider is Local LLM")
         return LocalLLM(model=model_instance.model_name, context_length=model_instance.context_length)
+    elif provider_name == 'LM Studio':
+        print("Provider is LM Studio")
+        return LMStudio(model=model_instance.model_name, api_key=api_key, end_point=model_instance.end_point, **kwargs)
     else:
         print('Unknown provider.')
 
@@ -51,5 +55,7 @@ def build_model_with_api_key(provider_name, api_key):
         return HuggingFace(api_key=api_key)
     elif provider_name.lower() == 'local llm':
         return LocalLLM(api_key=api_key)
+    elif provider_name.lower() == 'lm studio':
+        return LMStudio(api_key=api_key)
     else:
         print('Unknown provider.')
