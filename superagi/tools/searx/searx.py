@@ -46,10 +46,22 @@ class SearxSearchTool(BaseTool):
         Returns:
             Snippets from the Searx search.
         """
-        snippets = search_results(query)
-        summary = self.summarise_result(query, snippets)
+        try:
+            snippets = search_results(query)
+            if not snippets or snippets.strip() == "":
+                return f"No search results found for query: '{query}'. The search engines may be temporarily unavailable or the query may be too specific. Try rephrasing your search or using different keywords."
 
-        return summary
+            summary = self.summarise_result(query, snippets)
+            return summary
+
+        except Exception as e:
+            error_msg = str(e)
+            if "rate-limited" in error_msg.lower() or "429" in error_msg:
+                return f"Search temporarily unavailable due to rate limiting. For the query '{query}', I cannot access external search engines right now. Please try again later or provide the information directly if you have it."
+            elif "unreachable" in error_msg.lower() or "timeout" in error_msg.lower():
+                return f"Search engines are currently unreachable. For the query '{query}', I cannot access external search engines due to network issues. Please try again later."
+            else:
+                return f"Search failed for query '{query}': {error_msg}. Please try rephrasing your search or provide the information directly if available."
 
     def summarise_result(self, query, snippets):
         """
@@ -72,7 +84,7 @@ class SearxSearchTool(BaseTool):
 
         messages = [{"role": "system", "content": summarize_prompt}]
         result = self.llm.chat_completion(messages, max_tokens=self.max_token_limit)
-        
+
         if 'error' in result and result['message'] is not None:
             ErrorHandler.handle_openai_errors(self.toolkit_config.session, self.agent_id, self.agent_execution_id, result['message'])
         return result["content"]

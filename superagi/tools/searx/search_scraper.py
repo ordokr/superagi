@@ -26,7 +26,7 @@ class SearchResult(BaseModel):
     sources: List[str]
 
     def __str__(self):
-        return f"""{self.id}. {self.title} - {self.link} 
+        return f"""{self.id}. {self.title} - {self.link}
 {self.description}"""
 
 def search(query):
@@ -36,16 +36,36 @@ def search(query):
     Args:
         query : The query to search for.
     """
-    # TODO: use a better strategy for choosing hosts. Could use this list: https://searx.space/data/instances.json
-    searx_url = random.choice(searx_hosts)
-    res = httpx.get(
-        searx_url + "/search", params={"q": query}, headers={"User-Agent": "Mozilla/5.0 (X11; Linux i686; rv:109.0) Gecko/20100101 Firefox/114.0"}
-    )
-    if res.status_code != 200:
-        logger.info(res.status_code, searx_url)
-        raise Exception(f"Searx returned {res.status_code} status code")
+    # Try multiple hosts with better error handling
+    for attempt in range(len(searx_hosts)):
+        try:
+            searx_url = searx_hosts[attempt]
+            logger.info(f"Trying Searx host: {searx_url}")
 
-    return res.text
+            res = httpx.get(
+                searx_url + "/search",
+                params={"q": query},
+                headers={"User-Agent": "Mozilla/5.0 (X11; Linux i686; rv:109.0) Gecko/20100101 Firefox/114.0"},
+                timeout=10.0
+            )
+
+            if res.status_code == 200:
+                logger.info(f"Successfully got results from {searx_url}")
+                return res.text
+            elif res.status_code == 429:
+                logger.warning(f"Rate limited by {searx_url}, trying next host...")
+                continue
+            else:
+                logger.warning(f"Searx host {searx_url} returned {res.status_code}, trying next host...")
+                continue
+
+        except Exception as e:
+            logger.warning(f"Error with Searx host {searx_url}: {str(e)}")
+            continue
+
+    # If all hosts fail, return a helpful error message instead of raising exception
+    logger.error("All Searx hosts failed or are rate-limited")
+    raise Exception("Search temporarily unavailable. All Searx hosts are rate-limited or unreachable. Please try again later or use a different search method.")
 
 def clean_whitespace(s: str):
     """
@@ -72,7 +92,7 @@ def scrape_results(html):
     """
     soup = BeautifulSoup(html, "html.parser")
     result_divs = soup.find_all(attrs={"class": "result"})
-    
+
     result_list = []
     n = 1
     for result_div in result_divs:
@@ -90,7 +110,7 @@ def scrape_results(html):
         # Needed to work on multiple versions of Searx
         sources_container = result_div.find(
             attrs={"class": "pull-right"}
-        ) or result_div.find(attrs={"class": "engines"}) 
+        ) or result_div.find(attrs={"class": "engines"})
         source_spans = sources_container.find_all("span")
         sources = []
         for s in source_spans:

@@ -10,6 +10,13 @@ GOALS:
 CONSTRAINTS:
 {constraints}
 
+IMPORTANT TOOL USAGE GUIDELINES:
+1. If a tool returns an error or fails, DO NOT retry the same tool with the same arguments immediately.
+2. If a search tool fails due to rate limiting or network issues, try alternative approaches or use the "finish" tool to complete the task with available information.
+3. If you receive "Search temporarily unavailable" or similar error messages, acknowledge the limitation and proceed with alternative methods.
+4. Do not get stuck in loops - if a tool fails twice, try a different approach or complete the task with available information.
+5. Always make progress toward your goals, even if some tools are temporarily unavailable.
+
 TOOLS:
 {tools}
 
